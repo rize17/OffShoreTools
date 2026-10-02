@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.2</title>
+<title>Offshore Tools v1.3</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -74,15 +74,28 @@
     transform: translateY(-3px); border-color: var(--aqua);
     box-shadow: 0 10px 30px rgba(0,0,0,.45); outline: none;
   }
+  /* A fixed height, and the image taken out of the flow, so a tall phone
+     screenshot can't stretch its card: the whole screenshot is scaled down
+     to fit inside the box instead. */
   .shot {
-    aspect-ratio: 16 / 10; width: 100%;
+    position: relative; flex: none;
+    height: 240px; width: 100%; overflow: hidden;
     background: linear-gradient(135deg, #0e2a3d, #123a55);
     display: grid; place-items: center;
     font-size: 3.5rem; font-weight: 700; color: var(--aqua);
     border-bottom: 1px solid var(--panel-edge);
   }
-  .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
-  .body { padding: 14px 16px 16px; }
+  .shot:has(img) { background: var(--bg); }
+  .shot img {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; display: block;
+  }
+  /* Grows to fill the card, with the name and description at its foot, so
+     they line up along the bottom of every card in a row. */
+  .body {
+    flex: 1; padding: 14px 16px 16px;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
   .body h2 { font-size: 1.15rem; margin-bottom: 4px; }
   .body p { color: var(--ink-dim); font-size: 0.92rem; }
   .edit {
@@ -147,12 +160,12 @@
   .access b.admin { color: var(--amber); }
 
   .preview {
-    margin-top: 6px; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden;
+    margin-top: 6px; height: 240px; border-radius: 10px; overflow: hidden;
     border: 1px dashed var(--panel-edge); background: var(--bg);
     display: grid; place-items: center; color: var(--ink-dim); font-size: 0.85rem;
     text-align: center; padding: 0;
   }
-  .preview img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .preview img { width: 100%; height: 100%; object-fit: contain; }
   .hint { font-size: 0.8rem; color: var(--ink-dim); margin-top: 6px; }
   [hidden] { display: none !important; }
 </style>
@@ -160,7 +173,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.2</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.3</span></h1>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
 
