@@ -112,7 +112,9 @@ export default {
        deploy from a working one. Says what is wired up, never what a key is. */
     if (path === "/health") {
       const kv = !!env.TOOLS;
-      const k = kv ? await keys(env) : {};
+      // Secrets are reported even with no KV, so one missing binding
+      // doesn't make the keys look missing too.
+      const k = kv ? await keys(env) : { view: env.VIEW_KEY, admin: env.ADMIN_KEY };
       let held = "?";
       if (kv) {
         try { held = String((await load(env)).tools.length); } catch (_) { held = "unreadable"; }
