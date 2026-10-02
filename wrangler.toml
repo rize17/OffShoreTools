@@ -12,7 +12,7 @@
 # are NOT here: VIEW_KEY and ADMIN_KEY are dashboard secrets, which a deploy
 # leaves alone. Never add them to this file.
 
-name = "offshoretools-api"
+name = "offshoretools"
 main = "worker/offshoretools-api.js"
 compatibility_date = "2026-09-01"
 

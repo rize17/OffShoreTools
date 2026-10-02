@@ -2,7 +2,7 @@
 # Keep in step with ../wrangler.toml. The keys stay dashboard secrets -
 # never add VIEW_KEY or ADMIN_KEY to this file.
 
-name = "offshoretools-api"
+name = "offshoretools"
 main = "offshoretools-api.js"
 compatibility_date = "2026-09-01"
 
