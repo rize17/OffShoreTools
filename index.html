@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.4</title>
+<title>Offshore Tools v1.5</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -176,12 +176,47 @@
   .preview img { width: 100%; height: 100%; object-fit: contain; }
   .hint { font-size: 0.8rem; color: var(--ink-dim); margin-top: 6px; }
   [hidden] { display: none !important; }
+
+  /* Phones: every card on one screen, no scrolling. Two columns, and the
+     grid is sized to the space under the header, split into as many rows as
+     there are cards (--rows, set by render()). Each row is capped at 230px,
+     so a handful of apps doesn't blow up into giant cards. The screenshot
+     takes whatever height is left after the name; descriptions are dropped
+     to make room. */
+  @media (max-width: 640px) {
+    body {
+      height: 100dvh; display: flex; flex-direction: column;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+    }
+    header { width: 100%; margin: 4px auto 12px; }
+    header h1 { font-size: 1.3rem; }
+    .icon-btn { width: 40px; height: 40px; }
+    main, #tools { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; }
+    .status:empty { display: none; }
+    .grid {
+      flex: 1 1 0; min-height: 0;
+      max-height: calc(var(--rows, 4) * 230px);
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(var(--rows, 4), minmax(0, 1fr));
+      gap: 10px;
+    }
+    .card { min-height: 0; border-radius: 12px; }
+    .shot { flex: 1 1 0; height: auto; min-height: 0; font-size: 2.2rem; }
+    .body { flex: none; padding: 8px 10px; }
+    .body h2 { font-size: 0.95rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .body p { display: none; }
+    .add { min-height: 0; font-size: 0.9rem; }
+    .add span { font-size: 1.8rem; }
+    .edit, .move button { width: 32px; height: 32px; border-radius: 8px; font-size: 0.85rem; }
+    .edit { top: 6px; right: 6px; }
+    .move { top: 6px; left: 6px; gap: 4px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.4</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.5</span></h1>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
 
@@ -418,6 +453,7 @@ function render() {
     p.textContent = "No apps have been added yet.";
     grid.append(p);
   }
+  grid.style.setProperty("--rows", Math.max(1, Math.ceil(grid.children.length / 2)));
 }
 
 /* Screenshots are fetched with the key, so they can't be plain <img src>
