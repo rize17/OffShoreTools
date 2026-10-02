@@ -34,13 +34,13 @@ No build step and no package manager.
    `PASTE_KV_NAMESPACE_ID_HERE`, and push.
 2. **Worker**: Workers & Pages → *Create* → *Import a repository* →
    `rize17/OffShoreTools`, root directory `/` (or `worker`). The name must be
-   `offshoretools`, so that it is served at
-   `https://offshoretools.ryantholliday.workers.dev` (the address
+   `offshoretools-api`, so that it is served at
+   `https://offshoretools-api.ryantholliday.workers.dev` (the address
    `index.html` calls). A push then deploys it.
 3. **Keys**: the worker → Settings → Variables and Secrets → add two
    **Secrets**: `VIEW_KEY` and `ADMIN_KEY`. Make them different. Never put
    them in the repo.
-4. **Check**: open `https://offshoretools.ryantholliday.workers.dev/health`.
+4. **Check**: open `https://offshoretools-api.ryantholliday.workers.dev/health`.
    It should say KV bound: yes, and both keys set.
 
 Changing a key later is just editing the secret. Devices holding the old
@@ -54,4 +54,4 @@ branch*, root). `.nojekyll` keeps the files out of Jekyll.
 Bump the version on every functional change, in all four places at once: the
 `<title>`, the `.version` span, `CACHE` in `sw.js`, and *Current* below.
 
-Current: **v1.1**.
+Current: **v1.2**.
