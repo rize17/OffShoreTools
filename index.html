@@ -1,175 +1,633 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Offshore Tools</title>
-  <meta name="description" content="A collection of handy offshore tools: calendars, ship ETAs, timers and more.">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚓</text></svg>">
-  <style>
-    :root {
-      --bg: #f3f6f9;
-      --surface: #ffffff;
-      --text: #0f2233;
-      --muted: #5a6b7b;
-      --border: #dde4ea;
-      --accent: #0b6e99;
-      --accent-soft: #e3f1f8;
-      --header-from: #0a3d62;
-      --header-to: #0b6e99;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0b1620;
-        --surface: #12212e;
-        --text: #e6eef5;
-        --muted: #93a7b8;
-        --border: #1f3445;
-        --accent: #4fb3e0;
-        --accent-soft: #15344a;
-        --header-from: #06243a;
-        --header-to: #0a4a6b;
-      }
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-    header {
-      background: linear-gradient(135deg, var(--header-from), var(--header-to));
-      color: #fff;
-      padding: 48px 16px 64px;
-      text-align: center;
-    }
-    header h1 { margin: 0; font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -0.02em; }
-    header p { margin: 8px 0 0; opacity: 0.85; }
-    main {
-      max-width: 1000px;
-      margin: -32px auto 0;
-      padding: 0 16px 48px;
-    }
-    .search {
-      width: 100%;
-      padding: 14px 16px;
-      font-size: 1rem;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--surface);
-      color: var(--text);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      margin-bottom: 24px;
-    }
-    .search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
-    }
-    .card {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 20px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      text-decoration: none;
-      color: inherit;
-      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-    }
-    .card:hover, .card:focus-visible {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      border-color: var(--accent);
-      outline: none;
-    }
-    .icon {
-      width: 52px; height: 52px;
-      display: grid; place-items: center;
-      font-size: 28px;
-      border-radius: 12px;
-      background: var(--accent-soft);
-    }
-    .icon img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
-    .card h2 { margin: 0; font-size: 1.1rem; }
-    .card p { margin: 0; color: var(--muted); font-size: 0.92rem; flex: 1; }
-    .open { color: var(--accent); font-weight: 600; font-size: 0.9rem; }
-    .empty { text-align: center; color: var(--muted); padding: 32px 0; display: none; }
-    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 24px 16px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Offshore Tools v1.0</title>
+
+<!-- Add-to-Home-Screen support -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#07131d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Offshore Tools">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<style>
+  :root {
+    --bg: #07131d;
+    --panel: #0d1f2d;
+    --panel-edge: #16324a;
+    --ink: #d7e8f2;
+    --ink-dim: #6d8ba0;
+    --aqua: #38c8e8;
+    --aqua-deep: #1596b8;
+    --amber: #e8b638;
+    --ok: #4fd08a;
+    --err: #e86a5e;
+    font-size: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { min-height: 100%; }
+  body {
+    background: radial-gradient(1200px 500px at 50% -200px, #0e2a3d 0%, var(--bg) 60%) var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    padding: max(env(safe-area-inset-top), 12px) 16px calc(env(safe-area-inset-bottom) + 28px);
+    line-height: 1.45;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+
+  header {
+    max-width: 1100px; margin: 8px auto 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  header h1 { font-size: 1.6rem; letter-spacing: -0.01em; flex: 1; }
+  header h1 .version { font-size: 0.75rem; font-weight: 400; color: var(--ink-dim); margin-left: 6px; }
+  .icon-btn {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--panel); border: 1px solid var(--panel-edge);
+    font-size: 1.25rem; cursor: pointer;
+  }
+  .icon-btn:hover { border-color: var(--aqua-deep); }
+
+  main { max-width: 1100px; margin: 0 auto; }
+  .status { color: var(--ink-dim); font-size: 0.85rem; min-height: 1.3em; margin-bottom: 12px; }
+  .status.err { color: var(--err); }
+
+  /* ---------- cards ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 18px;
+  }
+  .card {
+    position: relative;
+    display: flex; flex-direction: column;
+    background: var(--panel); border: 1px solid var(--panel-edge);
+    border-radius: 16px; overflow: hidden;
+    text-decoration: none; color: inherit;
+    transition: transform .15s, border-color .15s, box-shadow .15s;
+  }
+  a.card:hover, a.card:focus-visible {
+    transform: translateY(-3px); border-color: var(--aqua);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45); outline: none;
+  }
+  .shot {
+    aspect-ratio: 16 / 10; width: 100%;
+    background: linear-gradient(135deg, #0e2a3d, #123a55);
+    display: grid; place-items: center;
+    font-size: 3.5rem; font-weight: 700; color: var(--aqua);
+    border-bottom: 1px solid var(--panel-edge);
+  }
+  .shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .body { padding: 14px 16px 16px; }
+  .body h2 { font-size: 1.15rem; margin-bottom: 4px; }
+  .body p { color: var(--ink-dim); font-size: 0.92rem; }
+  .edit {
+    position: absolute; top: 10px; right: 10px;
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(7,19,29,.85); border: 1px solid var(--panel-edge);
+    cursor: pointer; font-size: 1.05rem;
+  }
+  .edit:hover { border-color: var(--amber); }
+  .add {
+    border-style: dashed; cursor: pointer; min-height: 220px;
+    align-items: center; justify-content: center; gap: 6px;
+    color: var(--aqua); font-weight: 600; font-size: 1.05rem;
+  }
+  .add:hover { border-color: var(--aqua); }
+  .add span { font-size: 2.4rem; line-height: 1; }
+  .empty { color: var(--ink-dim); text-align: center; padding: 40px 0; }
+
+  /* ---------- key gate ---------- */
+  .gate {
+    max-width: 420px; margin: 10vh auto 0; text-align: center;
+    background: var(--panel); border: 1px solid var(--panel-edge);
+    border-radius: 18px; padding: 28px 22px;
+  }
+  .gate .big { font-size: 3rem; }
+  .gate h2 { margin: 6px 0 6px; }
+  .gate p { color: var(--ink-dim); margin-bottom: 18px; }
+
+  /* ---------- forms & dialogs ---------- */
+  label { display: block; font-size: 0.85rem; color: var(--ink-dim); margin: 12px 0 4px; }
+  input[type=text], input[type=url], input[type=password], textarea {
+    width: 100%; padding: 12px 14px; border-radius: 10px;
+    background: var(--bg); border: 1px solid var(--panel-edge);
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  input:focus, textarea:focus { outline: 2px solid var(--aqua-deep); outline-offset: 0; }
+  .btn {
+    padding: 11px 18px; border-radius: 10px; cursor: pointer; font-weight: 600;
+    background: var(--aqua-deep); border: 1px solid var(--aqua-deep); color: #fff;
+  }
+  .btn:hover { background: var(--aqua); border-color: var(--aqua); color: var(--bg); }
+  .btn.ghost { background: transparent; color: var(--ink); border-color: var(--panel-edge); }
+  .btn.ghost:hover { border-color: var(--ink-dim); color: var(--ink); }
+  .btn.danger { background: transparent; color: var(--err); border-color: var(--err); }
+  .btn.danger:hover { background: var(--err); color: #fff; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+  .row .spacer { flex: 1; }
+  .msg { font-size: 0.85rem; margin-top: 10px; min-height: 1.2em; }
+  .msg.err { color: var(--err); }
+  .msg.ok { color: var(--ok); }
+
+  dialog {
+    width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+    background: var(--panel); color: var(--ink);
+    border: 1px solid var(--panel-edge); border-radius: 16px; padding: 22px;
+  }
+  dialog::backdrop { background: rgba(0,0,0,.6); }
+  dialog h2 { font-size: 1.2rem; }
+  .access { margin-top: 8px; color: var(--ink-dim); }
+  .access b { color: var(--ink); }
+  .access b.admin { color: var(--amber); }
+
+  .preview {
+    margin-top: 6px; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden;
+    border: 1px dashed var(--panel-edge); background: var(--bg);
+    display: grid; place-items: center; color: var(--ink-dim); font-size: 0.85rem;
+    text-align: center; padding: 0;
+  }
+  .preview img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .hint { font-size: 0.8rem; color: var(--ink-dim); margin-top: 6px; }
+  [hidden] { display: none !important; }
+</style>
 </head>
 <body>
-  <header>
-    <h1>⚓ Offshore Tools</h1>
-    <p>Pick a tool to get started</p>
-  </header>
 
-  <main>
-    <input class="search" type="search" placeholder="Search tools…" aria-label="Search tools">
+<header>
+  <h1>⚓ Offshore Tools<span class="version">v1.0</span></h1>
+  <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
+</header>
+
+<main>
+  <!-- Shown until a working key has been entered on this device -->
+  <section class="gate" id="gate" hidden>
+    <div class="big">🔑</div>
+    <h2>Enter your key</h2>
+    <p>You only need to do this once on each device.</p>
+    <form id="gateForm">
+      <input type="password" id="gateKey" placeholder="Key" autocomplete="current-password" aria-label="Key">
+      <div class="row"><span class="spacer"></span><button class="btn" type="submit">Unlock</button><span class="spacer"></span></div>
+      <div class="msg err" id="gateMsg"></div>
+    </form>
+  </section>
+
+  <section id="tools" hidden>
+    <div class="status" id="status"></div>
     <div class="grid" id="grid"></div>
-    <p class="empty" id="empty">No tools match your search.</p>
-  </main>
+  </section>
+</main>
 
-  <footer>Offshore Tools</footer>
+<!-- Settings -->
+<dialog id="settings">
+  <h2>⚙️ Settings</h2>
+  <p class="access" id="access"></p>
+  <form id="keyForm">
+    <label for="newKey">Change key</label>
+    <input type="password" id="newKey" placeholder="New key" autocomplete="off">
+    <div class="msg" id="keyMsg"></div>
+    <div class="row">
+      <button class="btn danger" type="button" id="forget">Forget key on this device</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" type="button" data-close>Close</button>
+      <button class="btn" type="submit">Save key</button>
+    </div>
+  </form>
+</dialog>
 
-  <script>
-    // ── Add, remove or edit your tools here ──────────────────────────────
-    // icon:  an emoji, OR an image path/URL (e.g. "images/calendar.png")
-    // url:   where the card links to
-    const TOOLS = [
-      { name: "Rotation Calendar", icon: "📅", url: "#", description: "Plan swings, crew changes and days on/off." },
-      { name: "Ship ETA",          icon: "🚢", url: "#", description: "Estimate vessel arrival times from distance and speed." },
-      { name: "Timers",            icon: "⏱️", url: "#", description: "Countdown and interval timers for jobs on deck." },
-    ];
-    // ─────────────────────────────────────────────────────────────────────
+<!-- Add / edit a tool (admin key only) -->
+<dialog id="editor">
+  <h2 id="editorTitle">Add app</h2>
+  <form id="toolForm">
+    <label for="fName">Name</label>
+    <input type="text" id="fName" maxlength="60" required>
+    <label for="fUrl">Link</label>
+    <input type="url" id="fUrl" placeholder="https://…" required>
+    <label for="fDesc">Short description</label>
+    <textarea id="fDesc" maxlength="200"></textarea>
+    <label for="fIcon">Emoji (shown when there's no screenshot)</label>
+    <input type="text" id="fIcon" maxlength="8" placeholder="e.g. 🚢">
 
-    const grid = document.getElementById("grid");
-    const empty = document.getElementById("empty");
-    const isImage = (s) => /[./]/.test(s);
+    <label>Screenshot</label>
+    <div class="preview" id="preview">No screenshot</div>
+    <p class="hint">Choose an image, or copy a screenshot and paste it here (Ctrl/⌘+V).</p>
+    <div class="row" style="margin-top:8px">
+      <button class="btn ghost" type="button" id="pickImg">Choose image…</button>
+      <button class="btn ghost" type="button" id="clearImg">Remove</button>
+      <input type="file" id="fFile" accept="image/*" hidden>
+    </div>
 
-    for (const t of TOOLS) {
-      const a = document.createElement("a");
-      a.className = "card";
-      a.href = t.url;
-      a.dataset.search = (t.name + " " + t.description).toLowerCase();
+    <div class="msg" id="editMsg"></div>
+    <div class="row">
+      <button class="btn danger" type="button" id="delTool">Delete</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" type="button" data-close>Cancel</button>
+      <button class="btn" type="submit" id="saveTool">Save</button>
+    </div>
+  </form>
+</dialog>
 
-      const icon = document.createElement("div");
-      icon.className = "icon";
-      if (isImage(t.icon)) {
-        const img = document.createElement("img");
-        img.src = t.icon;
-        img.alt = "";
-        icon.append(img);
-      } else {
-        icon.textContent = t.icon;
-      }
+<script>
+"use strict";
 
-      const h = document.createElement("h2");
-      h.textContent = t.name;
+/* The API's address is in the code; the keys never are. The address is a
+   public URL visible in the page source whatever we do. The keys are the only
+   thing between the tool list and the internet, so they're typed once per
+   device and kept in that device's storage. A stored offshoretools.apiUrl
+   still wins if present - nothing sets it; it's for tests and emergencies. */
+const API_URL = "https://offshoretools-api.ryantholliday.workers.dev";
+
+const $ = id => document.getElementById(id);
+
+/* ---------- storage (localStorage with in-memory fallback) ---------- */
+const store = (() => {
+  const mem = {};
+  let ok = false;
+  try { localStorage.setItem("__t", "1"); localStorage.removeItem("__t"); ok = true; } catch (_) {}
+  return {
+    get(k, d) {
+      try { const v = ok ? localStorage.getItem(k) : mem[k]; return v == null ? d : JSON.parse(v); }
+      catch (_) { return d; }
+    },
+    set(k, v) {
+      try { const s = JSON.stringify(v); if (ok) localStorage.setItem(k, s); else mem[k] = s; } catch (_) {}
+    },
+    del(k) { try { if (ok) localStorage.removeItem(k); else delete mem[k]; } catch (_) {} },
+    keys() {
+      try { return ok ? Object.keys(localStorage) : Object.keys(mem); } catch (_) { return []; }
+    }
+  };
+})();
+
+const K_KEY = "offshoretools.key";
+const K_LIST = "offshoretools.list";      // last list seen, so the page opens instantly and works with no signal
+const K_IMG = "offshoretools.img.";       // + tool id → { at, data } cached screenshot
+
+const apiUrl = () => (String(store.get("offshoretools.apiUrl", "") || "") || API_URL).replace(/\/+$/, "");
+
+let key = String(store.get(K_KEY, "") || "");
+let list = store.get(K_LIST, null);        // { tools, role, updated }
+let editing = null;                         // tool being edited, or null when adding
+let pendingImage;                           // undefined = unchanged, null = remove, string = new data URL
+
+class KeyRejected extends Error {}
+
+async function api(path, method, body, useKey) {
+  let r;
+  try {
+    r = await fetch(apiUrl() + path, {
+      method: method || "GET",
+      headers: { "X-API-Key": useKey || key, "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined
+    });
+  } catch (_) {
+    throw new Error("couldn't reach the server - check your signal");
+  }
+  if (r.status === 401) throw new KeyRejected("that key wasn't accepted");
+  let data = null;
+  try { data = await r.clone().json(); } catch (_) {}
+  if (!r.ok) throw new Error((data && data.error) || "the server answered " + r.status);
+  return data || r;
+}
+
+/* ---------- screens ---------- */
+function showGate(msg) {
+  $("gate").hidden = false;
+  $("tools").hidden = true;
+  $("openSettings").hidden = true;
+  $("gateMsg").textContent = msg || "";
+  $("gateKey").value = "";
+  setTimeout(() => $("gateKey").focus(), 0);
+}
+
+function showTools() {
+  $("gate").hidden = true;
+  $("tools").hidden = false;
+  $("openSettings").hidden = false;
+}
+
+function setStatus(msg, isErr) {
+  $("status").textContent = msg || "";
+  $("status").classList.toggle("err", !!isErr);
+}
+
+const isAdmin = () => !!(list && list.role === "admin");
+
+/* ---------- rendering ---------- */
+function shotFor(t) {
+  const shot = document.createElement("div");
+  shot.className = "shot";
+  const cached = store.get(K_IMG + t.id, null);
+  if (t.imgAt && cached && cached.at === t.imgAt) {
+    const img = document.createElement("img");
+    img.src = cached.data;
+    img.alt = "";
+    shot.append(img);
+  } else {
+    shot.textContent = t.icon || (t.name || "?").trim().charAt(0).toUpperCase();
+  }
+  return shot;
+}
+
+function render() {
+  const grid = $("grid");
+  grid.replaceChildren();
+  const tools = (list && list.tools) || [];
+
+  for (const t of tools) {
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = t.url;
+
+    const body = document.createElement("div");
+    body.className = "body";
+    const h = document.createElement("h2");
+    h.textContent = t.name;
+    body.append(h);
+    if (t.description) {
       const p = document.createElement("p");
       p.textContent = t.description;
-      const open = document.createElement("span");
-      open.className = "open";
-      open.textContent = "Open →";
-
-      a.append(icon, h, p, open);
-      grid.append(a);
+      body.append(p);
     }
+    a.append(shotFor(t), body);
 
-    document.querySelector(".search").addEventListener("input", (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      let shown = 0;
-      for (const card of grid.children) {
-        const match = card.dataset.search.includes(q);
-        card.style.display = match ? "" : "none";
-        if (match) shown++;
-      }
-      empty.style.display = shown ? "none" : "block";
-    });
-  </script>
+    if (isAdmin()) {
+      const ed = document.createElement("button");
+      ed.className = "edit";
+      ed.type = "button";
+      ed.title = "Edit " + t.name;
+      ed.setAttribute("aria-label", "Edit " + t.name);
+      ed.textContent = "✏️";
+      ed.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); openEditor(t); });
+      a.append(ed);
+    }
+    grid.append(a);
+  }
+
+  if (isAdmin()) {
+    const add = document.createElement("button");
+    add.className = "card add";
+    add.type = "button";
+    add.innerHTML = "<span>＋</span>Add app";
+    add.addEventListener("click", () => openEditor(null));
+    grid.append(add);
+  }
+
+  if (!tools.length && !isAdmin()) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "No apps have been added yet.";
+    grid.append(p);
+  }
+}
+
+/* Screenshots are fetched with the key, so they can't be plain <img src>
+   links. Each is cached against the time it was uploaded and only fetched
+   again when that changes. */
+async function fetchImages() {
+  const tools = (list && list.tools) || [];
+  const want = new Set(tools.map(t => K_IMG + t.id));
+  for (const k of store.keys()) if (k.startsWith(K_IMG) && !want.has(k)) store.del(k);
+
+  let changed = false;
+  for (const t of tools) {
+    const cached = store.get(K_IMG + t.id, null);
+    if (!t.imgAt) { if (cached) { store.del(K_IMG + t.id); changed = true; } continue; }
+    if (cached && cached.at === t.imgAt) continue;
+    try {
+      const r = await api("/img/" + encodeURIComponent(t.id));
+      const data = await blobToDataUrl(await r.blob());
+      store.set(K_IMG + t.id, { at: t.imgAt, data });
+      changed = true;
+    } catch (_) { /* the card keeps its emoji tile; try again next load */ }
+  }
+  if (changed) render();
+}
+
+function blobToDataUrl(blob) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(fr.result);
+    fr.onerror = () => rej(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
+
+const when = ms => new Date(ms).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+
+function takeList(data) {
+  list = { tools: data.tools || [], role: data.role, updated: data.updated || 0 };
+  store.set(K_LIST, list);
+  render();
+  fetchImages();
+}
+
+async function refresh() {
+  if (!key) return showGate();
+  if (list) { showTools(); render(); }
+  setStatus(list ? "Updating…" : "Loading…");
+  try {
+    takeList(await api("/tools"));
+    showTools();
+    setStatus("");
+  } catch (e) {
+    if (e instanceof KeyRejected) {
+      forget();
+      return showGate("That key no longer works. Ask for the current one.");
+    }
+    if (list) setStatus("Offline - showing the list from " + when(list.updated || Date.now()) + ".", true);
+    else { showTools(); setStatus("Couldn't load the apps: " + e.message + ".", true); }
+  }
+}
+
+function forget() {
+  key = "";
+  list = null;
+  store.del(K_KEY);
+  store.del(K_LIST);
+  for (const k of store.keys()) if (k.startsWith(K_IMG)) store.del(k);
+  $("grid").replaceChildren();
+}
+
+/* ---------- key entry ---------- */
+async function tryKey(k, msgEl) {
+  k = k.trim();
+  if (!k) { msgEl.textContent = "Type the key first."; return false; }
+  msgEl.className = "msg";
+  msgEl.textContent = "Checking…";
+  try {
+    const data = await api("/tools", "GET", null, k);
+    key = k;
+    store.set(K_KEY, key);
+    takeList(data);
+    showTools();
+    setStatus("");
+    msgEl.textContent = "";
+    return true;
+  } catch (e) {
+    msgEl.className = "msg err";
+    msgEl.textContent = e instanceof KeyRejected ? "That key wasn't accepted." : "Couldn't check the key: " + e.message + ".";
+    return false;
+  }
+}
+
+$("gateForm").addEventListener("submit", e => {
+  e.preventDefault();
+  tryKey($("gateKey").value, $("gateMsg"));
+});
+
+/* ---------- settings ---------- */
+$("openSettings").addEventListener("click", () => {
+  $("access").innerHTML = isAdmin()
+    ? "This device has the <b class=\"admin\">admin key</b>: you can add, edit and remove apps."
+    : "This device has the <b>viewing key</b>.";
+  $("newKey").value = "";
+  $("keyMsg").textContent = "";
+  $("settings").showModal();
+});
+
+$("keyForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  if (await tryKey($("newKey").value, $("keyMsg"))) $("settings").close();
+});
+
+$("forget").addEventListener("click", () => {
+  if (!confirm("Forget the key on this device? You'll need to enter it again to see the apps.")) return;
+  forget();
+  $("settings").close();
+  showGate();
+});
+
+document.querySelectorAll("[data-close]").forEach(b =>
+  b.addEventListener("click", () => b.closest("dialog").close()));
+
+/* ---------- add / edit ---------- */
+function openEditor(t) {
+  editing = t;
+  pendingImage = undefined;
+  $("editorTitle").textContent = t ? "Edit " + t.name : "Add app";
+  $("fName").value = t ? t.name : "";
+  $("fUrl").value = t ? t.url : "";
+  $("fDesc").value = t ? t.description || "" : "";
+  $("fIcon").value = t ? t.icon || "" : "";
+  $("delTool").hidden = !t;
+  $("editMsg").textContent = "";
+  const cached = t && t.imgAt ? store.get(K_IMG + t.id, null) : null;
+  showPreview(cached ? cached.data : null);
+  $("editor").showModal();
+}
+
+function showPreview(dataUrl) {
+  const p = $("preview");
+  p.replaceChildren();
+  if (dataUrl) {
+    const img = document.createElement("img");
+    img.src = dataUrl;
+    img.alt = "Screenshot preview";
+    p.append(img);
+  } else {
+    p.textContent = "No screenshot";
+  }
+}
+
+/* Shrink to 800px wide before upload. A phone screenshot is a few MB; this
+   brings it to roughly 30-80 KB, which KV holds without fuss and loads fast
+   over a poor connection. WebP where the browser can make it, else JPEG. */
+async function shrink(file) {
+  const bmp = await createImageBitmap(file);
+  const scale = Math.min(1, 800 / bmp.width);
+  const c = document.createElement("canvas");
+  c.width = Math.round(bmp.width * scale);
+  c.height = Math.round(bmp.height * scale);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  const toBlob = (type, q) => new Promise(res => c.toBlob(res, type, q));
+  let blob = await toBlob("image/webp", 0.8);
+  if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg", 0.82);
+  return blobToDataUrl(blob);
+}
+
+async function takeImage(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  $("editMsg").className = "msg";
+  $("editMsg").textContent = "Preparing screenshot…";
+  try {
+    pendingImage = await shrink(file);
+    showPreview(pendingImage);
+    $("editMsg").textContent = "";
+  } catch (_) {
+    $("editMsg").className = "msg err";
+    $("editMsg").textContent = "Couldn't read that image.";
+  }
+}
+
+$("pickImg").addEventListener("click", () => $("fFile").click());
+$("fFile").addEventListener("change", e => { takeImage(e.target.files[0]); e.target.value = ""; });
+$("clearImg").addEventListener("click", () => { pendingImage = null; showPreview(null); });
+$("editor").addEventListener("paste", e => {
+  const item = [...(e.clipboardData ? e.clipboardData.items : [])].find(i => i.type.startsWith("image/"));
+  if (item) { e.preventDefault(); takeImage(item.getAsFile()); }
+});
+
+function newId(name) {
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "app";
+  return slug + "-" + Math.random().toString(36).slice(2, 6);
+}
+
+$("toolForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = $("fName").value.trim();
+  const body = {
+    name,
+    url: $("fUrl").value.trim(),
+    description: $("fDesc").value.trim(),
+    icon: $("fIcon").value.trim()
+  };
+  if (pendingImage !== undefined) body.image = pendingImage;
+  const id = editing ? editing.id : newId(name);
+
+  $("saveTool").disabled = true;
+  $("editMsg").className = "msg";
+  $("editMsg").textContent = "Saving…";
+  try {
+    const data = await api("/tools/" + encodeURIComponent(id), "PUT", body);
+    // Keep the screenshot just uploaded so it doesn't have to come back down.
+    if (typeof pendingImage === "string") {
+      const saved = (data.tools || []).find(t => t.id === id);
+      if (saved) store.set(K_IMG + id, { at: saved.imgAt, data: pendingImage });
+    }
+    takeList(data);
+    $("editor").close();
+  } catch (err) {
+    $("editMsg").className = "msg err";
+    $("editMsg").textContent = "Not saved: " + err.message + ".";
+  } finally {
+    $("saveTool").disabled = false;
+  }
+});
+
+$("delTool").addEventListener("click", async () => {
+  if (!editing || !confirm("Remove " + editing.name + " from Offshore Tools?")) return;
+  try {
+    takeList(await api("/tools/" + encodeURIComponent(editing.id), "DELETE"));
+    $("editor").close();
+  } catch (err) {
+    $("editMsg").className = "msg err";
+    $("editMsg").textContent = "Not removed: " + err.message + ".";
+  }
+});
+
+/* ---------- start ---------- */
+refresh();
+document.addEventListener("visibilitychange", () => { if (!document.hidden && key) refresh(); });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+}
+</script>
 </body>
 </html>
