@@ -9,7 +9,8 @@ typed once per device and remembered: there's no login and no timeout.
 
 - **Viewing key**: shows the cards. Give this to the crew.
 - **Admin key**: also shows ✏️ on each card and a **＋ Add app** card, to add,
-  edit and remove tools and their screenshots.
+  edit and remove tools and their screenshots, and ◀ ▶ on each card to change
+  the order. The order is the same for everyone.
 
 ⚙️ Settings changes the key or forgets it on that device.
 
@@ -54,4 +55,4 @@ branch*, root). `.nojekyll` keeps the files out of Jekyll.
 Bump the version on every functional change, in all four places at once: the
 `<title>`, the `.version` span, `CACHE` in `sw.js`, and *Current* below.
 
-Current: **v1.3**.
+Current: **v1.4**.

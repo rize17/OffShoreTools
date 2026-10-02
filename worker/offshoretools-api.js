@@ -18,7 +18,11 @@
  *
  * As in Ship ETA, every write names one tool and the worker merges it into
  * the stored list. There is no endpoint that replaces the whole list, so a
- * tab left open for a week cannot revert anyone's changes.
+ * tab left open for a week cannot revert anyone's changes. That includes
+ * ordering: a move names one tool and a direction, and the worker swaps it
+ * with its neighbour in the stored list, rather than accepting a whole order.
+ *
+ * The stored array order is the display order. New tools go on the end.
  */
 
 const STORE = "tools:v1";
@@ -72,7 +76,6 @@ async function load(env) {
 }
 
 async function save(env, tools) {
-  tools.sort((a, b) => String(a.name).localeCompare(String(b.name)));
   const out = { tools, updated: Date.now() };
   await env.TOOLS.put(STORE, JSON.stringify(out));
   return out;
@@ -139,6 +142,24 @@ export default {
     if (!role) return json({ error: "bad or missing key" }, 401);
 
     if (path === "/tools" && req.method === "GET") return json({ ...(await load(env)), role });
+
+    // PUT /move/<id> {"by": -1 | 1}: one step earlier or later.
+    if (path.startsWith("/move/") && req.method === "PUT") {
+      if (role !== "admin") return json({ error: "the admin key is needed to change tools" }, 403);
+      const id = decodeURIComponent(path.slice(6));
+      let body;
+      try { body = await req.json(); } catch (_) { return json({ error: "bad json" }, 400); }
+      const by = body && body.by;
+      if (by !== -1 && by !== 1) return json({ error: "by must be -1 or 1" }, 400);
+
+      const cur = await load(env);
+      const at = cur.tools.findIndex(t => t && t.id === id);
+      const to = at + by;
+      // Already first or last, or gone: nothing to do, not an error.
+      if (at < 0 || to < 0 || to >= cur.tools.length) return json({ ...cur, role });
+      [cur.tools[at], cur.tools[to]] = [cur.tools[to], cur.tools[at]];
+      return json({ ...(await save(env, cur.tools)), role });
+    }
 
     if (path.startsWith("/img/") && req.method === "GET") {
       const id = decodeURIComponent(path.slice(5));

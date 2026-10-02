@@ -23,6 +23,8 @@ worker is deployed separately by Workers Builds from the same repo.
   person chooses *Forget key* or the key stops working (401). Don't add
   timeouts or sessions: avoiding re-logging in is the reason this isn't a login.
 - **Every write names one tool.** There is no endpoint that replaces the list.
+  Ordering too: `PUT /move/<id>` with `{"by": -1|1}` swaps that tool with its
+  neighbour. The stored array order is the display order; new tools go last.
 - **Screenshots live in KV** under `img:<id>`, shrunk in the browser to 800px
   WebP/JPEG (~30-80 KB) before upload. `imgAt` on the tool is the upload time;
   the page caches each image in localStorage against it and refetches only

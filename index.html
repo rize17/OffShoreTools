@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.3</title>
+<title>Offshore Tools v1.4</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -105,6 +105,14 @@
     cursor: pointer; font-size: 1.05rem;
   }
   .edit:hover { border-color: var(--amber); }
+  .move { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
+  .move button {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(7,19,29,.85); border: 1px solid var(--panel-edge);
+    color: var(--aqua); cursor: pointer; font-size: 1rem;
+  }
+  .move button:hover:not(:disabled) { border-color: var(--aqua); }
+  .move button:disabled { opacity: .3; cursor: default; }
   .add {
     border-style: dashed; cursor: pointer; min-height: 220px;
     align-items: center; justify-content: center; gap: 6px;
@@ -173,7 +181,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.3</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.4</span></h1>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
 
@@ -352,7 +360,7 @@ function render() {
   grid.replaceChildren();
   const tools = (list && list.tools) || [];
 
-  for (const t of tools) {
+  tools.forEach((t, i) => {
     const a = document.createElement("a");
     a.className = "card";
     a.href = t.url;
@@ -377,10 +385,23 @@ function render() {
       ed.setAttribute("aria-label", "Edit " + t.name);
       ed.textContent = "✏️";
       ed.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); openEditor(t); });
-      a.append(ed);
+
+      const mv = document.createElement("div");
+      mv.className = "move";
+      for (const [by, label, word] of [[-1, "◀", "earlier"], [1, "▶", "later"]]) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = label;
+        btn.title = "Move " + word;
+        btn.setAttribute("aria-label", "Move " + t.name + " " + word);
+        btn.disabled = by < 0 ? i === 0 : i === tools.length - 1;
+        btn.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); move(t, by); });
+        mv.append(btn);
+      }
+      a.append(ed, mv);
     }
     grid.append(a);
-  }
+  });
 
   if (isAdmin()) {
     const add = document.createElement("button");
@@ -455,6 +476,27 @@ async function refresh() {
     }
     if (list) setStatus("Offline - showing the list from " + when(list.updated || Date.now()) + ".", true);
     else { showTools(); setStatus("Couldn't load the apps: " + e.message + ".", true); }
+  }
+}
+
+/* Shown moved straight away, then the worker's answer replaces it. The
+   worker swaps by id, so two people moving at once can't lose a tool. */
+async function move(t, by) {
+  const tools = list.tools.slice();
+  const at = tools.findIndex(x => x.id === t.id);
+  const to = at + by;
+  if (at < 0 || to < 0 || to >= tools.length) return;
+  const before = list;
+  [tools[at], tools[to]] = [tools[to], tools[at]];
+  list = { ...list, tools };
+  render();
+  try {
+    takeList(await api("/move/" + encodeURIComponent(t.id), "PUT", { by }));
+    setStatus("");
+  } catch (e) {
+    list = before;
+    render();
+    setStatus("Couldn't move " + t.name + ": " + e.message + ".", true);
   }
 }
 
