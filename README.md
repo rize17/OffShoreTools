@@ -67,4 +67,4 @@ branch*, root). `.nojekyll` keeps the files out of Jekyll.
 Bump the version on every functional change, in all four places at once: the
 `<title>`, the `.version` span, `CACHE` in `sw.js`, and *Current* below.
 
-Current: **v1.9**.
+Current: **v1.10**.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.9</title>
+<title>Offshore Tools v1.10</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -260,7 +260,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.9</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.10</span></h1>
   <button class="editing-badge" id="editingBadge" type="button" title="Turn edit mode off" hidden>✏️<span class="word"> Editing</span> ✕</button>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
@@ -595,7 +595,9 @@ async function refresh() {
       forget();
       return showGate("That key no longer works. Ask for the current one.");
     }
-    if (list) setStatus("Offline - showing the list from " + when(list.updated || Date.now()) + ".", true);
+    // Say why: "offline" for every failure hid a broken worker behind what
+    // looked like a signal problem.
+    if (list) setStatus("Couldn't update (" + e.message + ") - showing the list from " + when(list.updated || Date.now()) + ".", true);
     else { showTools(); setStatus("Couldn't load the apps: " + e.message + ".", true); }
   }
 }
