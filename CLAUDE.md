@@ -22,6 +22,9 @@ worker is deployed separately by Workers Builds from the same repo.
 - **The key is remembered, never expired.** It's in localStorage until the
   person chooses *Forget key* or the key stops working (401). Don't add
   timeouts or sessions: avoiding re-logging in is the reason this isn't a login.
+- **Edit mode is off on every load.** Even with the admin key the page is the
+  plain view until *Edit mode* is switched on in Settings. It is never stored;
+  don't persist it. The worker still enforces the admin key on every write.
 - **Every write names one tool.** There is no endpoint that replaces the list.
   Ordering too: `PUT /move/<id>` with `{"by": -1|1}` swaps that tool with its
   neighbour. The stored array order is the display order; new tools go last.

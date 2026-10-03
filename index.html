@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.5</title>
+<title>Offshore Tools v1.6</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -166,6 +166,31 @@
   .access { margin-top: 8px; color: var(--ink-dim); }
   .access b { color: var(--ink); }
   .access b.admin { color: var(--amber); }
+  .toggle {
+    display: flex; align-items: center; gap: 12px; margin: 16px 0 4px;
+    padding: 12px 14px; border-radius: 10px; cursor: pointer;
+    background: var(--bg); border: 1px solid var(--panel-edge);
+    color: var(--ink); font-size: 1rem;
+  }
+  .toggle span { flex: 1; }
+  .toggle small { color: var(--ink-dim); }
+  .toggle input {
+    appearance: none; -webkit-appearance: none; margin: 0; flex: none;
+    width: 48px; height: 28px; border-radius: 14px; position: relative; cursor: pointer;
+    background: var(--panel-edge); transition: background .15s;
+  }
+  .toggle input::after {
+    content: ""; position: absolute; top: 3px; left: 3px;
+    width: 22px; height: 22px; border-radius: 50%; background: var(--ink);
+    transition: transform .15s;
+  }
+  .toggle input:checked { background: var(--amber); }
+  .toggle input:checked::after { transform: translateX(20px); }
+  .editing-badge {
+    padding: 6px 10px; border-radius: 8px; cursor: pointer;
+    background: transparent; border: 1px solid var(--amber); color: var(--amber);
+    font-size: 0.8rem; font-weight: 600;
+  }
 
   .preview {
     margin-top: 6px; height: 240px; border-radius: 10px; overflow: hidden;
@@ -189,7 +214,8 @@
       padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
     }
     header { width: 100%; margin: 4px auto 12px; }
-    header h1 { font-size: 1.3rem; }
+    header h1 { font-size: 1.3rem; white-space: nowrap; }
+    .editing-badge .word { display: none; }
     .icon-btn { width: 40px; height: 40px; }
     main, #tools { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; }
     .status:empty { display: none; }
@@ -216,7 +242,8 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.5</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.6</span></h1>
+  <button class="editing-badge" id="editingBadge" type="button" title="Turn edit mode off" hidden>✏️<span class="word"> Editing</span> ✕</button>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
 
@@ -243,6 +270,10 @@
 <dialog id="settings">
   <h2>⚙️ Settings</h2>
   <p class="access" id="access"></p>
+  <label class="toggle" id="editToggleRow" hidden>
+    <span>Edit mode<br><small>Add, edit, remove and reorder apps</small></span>
+    <input type="checkbox" id="editToggle">
+  </label>
   <form id="keyForm">
     <label for="newKey">Change key</label>
     <input type="password" id="newKey" placeholder="New key" autocomplete="off">
@@ -374,6 +405,18 @@ function setStatus(msg, isErr) {
 
 const isAdmin = () => !!(list && list.role === "admin");
 
+/* Edit mode is off on every load and never stored: even with the admin key,
+   the page is the plain view until it's switched on in Settings. */
+let editOn = false;
+const canEdit = () => isAdmin() && editOn;
+
+function setEdit(on) {
+  editOn = !!on && isAdmin();
+  $("editToggle").checked = editOn;
+  $("editingBadge").hidden = !editOn;
+  render();
+}
+
 /* ---------- rendering ---------- */
 function shotFor(t) {
   const shot = document.createElement("div");
@@ -412,7 +455,7 @@ function render() {
     }
     a.append(shotFor(t), body);
 
-    if (isAdmin()) {
+    if (canEdit()) {
       const ed = document.createElement("button");
       ed.className = "edit";
       ed.type = "button";
@@ -438,7 +481,7 @@ function render() {
     grid.append(a);
   });
 
-  if (isAdmin()) {
+  if (canEdit()) {
     const add = document.createElement("button");
     add.className = "card add";
     add.type = "button";
@@ -447,13 +490,14 @@ function render() {
     grid.append(add);
   }
 
-  if (!tools.length && !isAdmin()) {
+  if (!tools.length && !canEdit()) {
     const p = document.createElement("p");
     p.className = "empty";
     p.textContent = "No apps have been added yet.";
     grid.append(p);
   }
   grid.style.setProperty("--rows", Math.max(1, Math.ceil(grid.children.length / 2)));
+  $("editingBadge").hidden = !canEdit();
 }
 
 /* Screenshots are fetched with the key, so they can't be plain <img src>
@@ -537,6 +581,8 @@ async function move(t, by) {
 }
 
 function forget() {
+  editOn = false;
+  $("editingBadge").hidden = true;
   key = "";
   list = null;
   store.del(K_KEY);
@@ -555,6 +601,8 @@ async function tryKey(k, msgEl) {
     const data = await api("/tools", "GET", null, k);
     key = k;
     store.set(K_KEY, key);
+    editOn = false;
+    $("editingBadge").hidden = true;
     takeList(data);
     showTools();
     setStatus("");
@@ -575,12 +623,17 @@ $("gateForm").addEventListener("submit", e => {
 /* ---------- settings ---------- */
 $("openSettings").addEventListener("click", () => {
   $("access").innerHTML = isAdmin()
-    ? "This device has the <b class=\"admin\">admin key</b>: you can add, edit and remove apps."
+    ? "This device has the <b class=\"admin\">admin key</b>."
     : "This device has the <b>viewing key</b>.";
+  $("editToggleRow").hidden = !isAdmin();
+  $("editToggle").checked = editOn;
   $("newKey").value = "";
   $("keyMsg").textContent = "";
   $("settings").showModal();
 });
+
+$("editToggle").addEventListener("change", e => setEdit(e.target.checked));
+$("editingBadge").addEventListener("click", () => setEdit(false));
 
 $("keyForm").addEventListener("submit", async e => {
   e.preventDefault();

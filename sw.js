@@ -1,7 +1,7 @@
 // Offline shell cache, so the page opens with no signal. The tool list and
 // screenshots come from the API (another origin) and are left to the page,
 // which keeps its own copy of the last list it saw.
-const CACHE = "offshoretools-v1.5";
+const CACHE = "offshoretools-v1.6";
 const ASSETS = ["./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
