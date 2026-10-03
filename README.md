@@ -45,6 +45,12 @@ No build step and no package manager.
 4. **Check**: open `https://offshoretools-api.ryantholliday.workers.dev/health`.
    It should say KV bound: yes, and both keys set.
 
+**Shared with Ship ETA and the Flight Operations Calendar.** Both accept
+these keys too, and pick up the key saved here on the same device, so a card
+opens its app without a second key. Their workers hold copies as the secrets
+`OFFSHORE_VIEW_KEY` and `OFFSHORE_ADMIN_KEY`: changing a key here means
+changing it on those two workers as well (three places, same value).
+
 Changing a key later is just editing the secret. Devices holding the old
 key are sent back to the key screen on their next load.
 
