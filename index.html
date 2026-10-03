@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.10</title>
+<title>Offshore Tools v1.11</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -185,6 +185,11 @@
     color: var(--ink); font-size: 1rem;
   }
   .toggle span { flex: 1; }
+  button.toggle { width: 100%; text-align: left; font: inherit; }
+  button.toggle:hover { border-color: var(--aqua-deep); }
+  .toggle .chev { flex: none; color: var(--ink-dim); font-size: 1.5rem; line-height: 1; }
+  .danger-zone { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--panel-edge); }
+  .danger-zone p { color: var(--ink-dim); font-size: 0.85rem; margin-bottom: 10px; }
   .toggle small { color: var(--ink-dim); }
   .toggle input {
     appearance: none; -webkit-appearance: none; margin: 0; flex: none;
@@ -198,6 +203,8 @@
   }
   .toggle input:checked { background: var(--amber); }
   .toggle input:checked::after { transform: translateX(20px); }
+  /* Opening Settings focuses the first switch; a ring on it read as a state. */
+  .toggle input:focus:not(:focus-visible) { outline: none; }
   .beta-tag {
     position: absolute; left: 8px; bottom: 8px;
     padding: 2px 8px; border-radius: 6px;
@@ -260,7 +267,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.10</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.11</span></h1>
   <button class="editing-badge" id="editingBadge" type="button" title="Turn edit mode off" hidden>✏️<span class="word"> Editing</span> ✕</button>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
@@ -287,7 +294,6 @@
 <!-- Settings -->
 <dialog id="settings">
   <h2>⚙️ Settings</h2>
-  <p class="access" id="access"></p>
   <label class="toggle">
     <span>Show beta apps<br><small>New apps still being tried out</small></span>
     <input type="checkbox" id="betaToggle">
@@ -296,17 +302,35 @@
     <span>Edit mode<br><small>Add, edit, remove and reorder apps</small></span>
     <input type="checkbox" id="editToggle">
   </label>
+  <!-- The key is rarely touched: one row here, the controls in their own box. -->
+  <button class="toggle" type="button" id="openKey">
+    <span>Key<br><small id="access"></small></span>
+    <span class="chev" aria-hidden="true">›</span>
+  </button>
+  <div class="row">
+    <span class="spacer"></span>
+    <button class="btn" type="button" data-close>Close</button>
+  </div>
+</dialog>
+
+<!-- Key: change or forget (opened from Settings) -->
+<dialog id="keyDlg">
+  <h2>🔑 Key</h2>
+  <p class="access" id="keyAccess"></p>
   <form id="keyForm">
     <label for="newKey">Change key</label>
     <input type="password" id="newKey" placeholder="New key" autocomplete="off">
     <div class="msg" id="keyMsg"></div>
     <div class="row">
-      <button class="btn danger" type="button" id="forget">Forget key on this device</button>
       <span class="spacer"></span>
-      <button class="btn ghost" type="button" data-close>Close</button>
+      <button class="btn ghost" type="button" data-close>Cancel</button>
       <button class="btn" type="submit">Save key</button>
     </div>
   </form>
+  <div class="danger-zone">
+    <p>Remove the key from this device. You'll need to enter it again to see the apps.</p>
+    <button class="btn danger" type="button" id="forget">Forget key on this device</button>
+  </div>
 </dialog>
 
 <!-- Add / edit a tool (admin key only) -->
@@ -664,16 +688,23 @@ $("gateForm").addEventListener("submit", e => {
 });
 
 /* ---------- settings ---------- */
+const accessText = () => isAdmin()
+  ? "This device has the <b class=\"admin\">admin key</b>."
+  : "This device has the <b>viewing key</b>.";
+
 $("openSettings").addEventListener("click", () => {
-  $("access").innerHTML = isAdmin()
-    ? "This device has the <b class=\"admin\">admin key</b>."
-    : "This device has the <b>viewing key</b>.";
+  $("access").innerHTML = accessText();
   $("editToggleRow").hidden = !isAdmin();
   $("editToggle").checked = editOn;
   $("betaToggle").checked = showBeta;
+  $("settings").showModal();
+});
+
+$("openKey").addEventListener("click", () => {
+  $("keyAccess").innerHTML = accessText();
   $("newKey").value = "";
   $("keyMsg").textContent = "";
-  $("settings").showModal();
+  $("keyDlg").showModal();
 });
 
 $("editToggle").addEventListener("change", e => setEdit(e.target.checked));
@@ -686,12 +717,13 @@ $("editingBadge").addEventListener("click", () => setEdit(false));
 
 $("keyForm").addEventListener("submit", async e => {
   e.preventDefault();
-  if (await tryKey($("newKey").value, $("keyMsg"))) $("settings").close();
+  if (await tryKey($("newKey").value, $("keyMsg"))) { $("keyDlg").close(); $("settings").close(); }
 });
 
 $("forget").addEventListener("click", () => {
   if (!confirm("Forget the key on this device? You'll need to enter it again to see the apps.")) return;
   forget();
+  $("keyDlg").close();
   $("settings").close();
   showGate();
 });
