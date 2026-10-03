@@ -3,13 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.6</title>
+<title>Offshore Tools v1.7</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#07131d">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- "black", not "black-translucent": translucent draws the page under the
+     clock and battery and relies on env(safe-area-inset-top) to pad it clear,
+     and on an iPhone home-screen launch that came back 0 - the gear sat under
+     the status bar and couldn't be tapped. An opaque bar keeps the page below it. -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Offshore Tools">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -242,7 +246,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.6</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.7</span></h1>
   <button class="editing-badge" id="editingBadge" type="button" title="Turn edit mode off" hidden>✏️<span class="word"> Editing</span> ✕</button>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
