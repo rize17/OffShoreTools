@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.8</title>
+<title>Offshore Tools v1.9</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -160,8 +160,16 @@
   .msg.err { color: var(--err); }
   .msg.ok { color: var(--ok); }
 
+  /* Positioned by hand. A browser centres a modal with margin: auto against
+     inset: 0, and the "* { margin: 0 }" reset above takes that away - which
+     pinned it to the top left, its heading under an iPhone's clock. The
+     safe-area terms keep it clear of the status bar and the home indicator. */
   dialog {
-    width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+    position: fixed; inset: 0; margin: auto;
+    width: min(520px, calc(100vw - 32px));
+    height: fit-content;
+    max-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 32px);
+    overflow: auto;
     background: var(--panel); color: var(--ink);
     border: 1px solid var(--panel-edge); border-radius: 16px; padding: 22px;
   }
@@ -252,7 +260,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.8</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.9</span></h1>
   <button class="editing-badge" id="editingBadge" type="button" title="Turn edit mode off" hidden>✏️<span class="word"> Editing</span> ✕</button>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
