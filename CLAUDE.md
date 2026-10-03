@@ -25,6 +25,10 @@ worker is deployed separately by Workers Builds from the same repo.
 - **Edit mode is off on every load.** Even with the admin key the page is the
   plain view until *Edit mode* is switched on in Settings. It is never stored;
   don't persist it. The worker still enforces the admin key on every write.
+- **Beta is a label, not a lock.** A tool with `beta: true` is still sent to
+  every key; the page hides it unless *Show beta apps* is on in Settings
+  (remembered per device as `offshoretools.showBeta`). Edit mode shows all
+  tools so beta ones can be managed. Don't treat beta as access control.
 - **Every write names one tool.** There is no endpoint that replaces the list.
   Ordering too: `PUT /move/<id>` with `{"by": -1|1}` swaps that tool with its
   neighbour. The stored array order is the display order; new tools go last.

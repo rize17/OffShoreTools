@@ -15,6 +15,11 @@ typed once per device and remembered: there's no login and no timeout.
 
 ⚙️ Settings changes the key or forgets it on that device.
 
+**Beta apps.** When adding or editing an app, tick *Beta* for one that's
+still being tried out. Beta apps only show for people who switch on *Show
+beta apps* in ⚙️ Settings (remembered on that device), with a BETA tag on
+the card. They're hidden, not locked: anyone with a key could switch it on.
+
 ## Files
 
 ```
@@ -62,4 +67,4 @@ branch*, root). `.nojekyll` keeps the files out of Jekyll.
 Bump the version on every functional change, in all four places at once: the
 `<title>`, the `.version` span, `CACHE` in `sw.js`, and *Current* below.
 
-Current: **v1.7**.
+Current: **v1.8**.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Offshore Tools v1.7</title>
+<title>Offshore Tools v1.8</title>
 
 <!-- Add-to-Home-Screen support -->
 <link rel="manifest" href="manifest.webmanifest">
@@ -190,6 +190,12 @@
   }
   .toggle input:checked { background: var(--amber); }
   .toggle input:checked::after { transform: translateX(20px); }
+  .beta-tag {
+    position: absolute; left: 8px; bottom: 8px;
+    padding: 2px 8px; border-radius: 6px;
+    background: var(--amber); color: var(--bg);
+    font-size: 0.7rem; font-weight: 700; letter-spacing: .06em;
+  }
   .editing-badge {
     padding: 6px 10px; border-radius: 8px; cursor: pointer;
     background: transparent; border: 1px solid var(--amber); color: var(--amber);
@@ -246,7 +252,7 @@
 <body>
 
 <header>
-  <h1>⚓ Offshore Tools<span class="version">v1.7</span></h1>
+  <h1>⚓ Offshore Tools<span class="version">v1.8</span></h1>
   <button class="editing-badge" id="editingBadge" type="button" title="Turn edit mode off" hidden>✏️<span class="word"> Editing</span> ✕</button>
   <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings" hidden>⚙️</button>
 </header>
@@ -274,6 +280,10 @@
 <dialog id="settings">
   <h2>⚙️ Settings</h2>
   <p class="access" id="access"></p>
+  <label class="toggle">
+    <span>Show beta apps<br><small>New apps still being tried out</small></span>
+    <input type="checkbox" id="betaToggle">
+  </label>
   <label class="toggle" id="editToggleRow" hidden>
     <span>Edit mode<br><small>Add, edit, remove and reorder apps</small></span>
     <input type="checkbox" id="editToggle">
@@ -303,6 +313,10 @@
     <textarea id="fDesc" maxlength="200"></textarea>
     <label for="fIcon">Emoji (shown when there's no screenshot)</label>
     <input type="text" id="fIcon" maxlength="8" placeholder="e.g. 🚢">
+    <label class="toggle">
+      <span>Beta<br><small>Only shown to people with beta apps switched on</small></span>
+      <input type="checkbox" id="fBeta">
+    </label>
 
     <label>Screenshot</label>
     <div class="preview" id="preview">No screenshot</div>
@@ -412,6 +426,13 @@ const isAdmin = () => !!(list && list.role === "admin");
 /* Edit mode is off on every load and never stored: even with the admin key,
    the page is the plain view until it's switched on in Settings. */
 let editOn = false;
+
+/* Show beta apps is a per-device preference and, unlike edit mode, is
+   remembered. It decides what's shown, not what's sent: anyone with a key
+   still receives beta tools from the worker. Edit mode shows everything,
+   so beta apps can be managed with the switch either way. */
+const K_BETA = "offshoretools.showBeta";
+let showBeta = !!store.get(K_BETA, false);
 const canEdit = () => isAdmin() && editOn;
 
 function setEdit(on) {
@@ -440,7 +461,8 @@ function shotFor(t) {
 function render() {
   const grid = $("grid");
   grid.replaceChildren();
-  const tools = (list && list.tools) || [];
+  const all = (list && list.tools) || [];
+  const tools = canEdit() || showBeta ? all : all.filter(t => !t.beta);
 
   tools.forEach((t, i) => {
     const a = document.createElement("a");
@@ -457,7 +479,14 @@ function render() {
       p.textContent = t.description;
       body.append(p);
     }
-    a.append(shotFor(t), body);
+    const shot = shotFor(t);
+    if (t.beta) {
+      const tag = document.createElement("span");
+      tag.className = "beta-tag";
+      tag.textContent = "BETA";
+      shot.append(tag);
+    }
+    a.append(shot, body);
 
     if (canEdit()) {
       const ed = document.createElement("button");
@@ -497,7 +526,7 @@ function render() {
   if (!tools.length && !canEdit()) {
     const p = document.createElement("p");
     p.className = "empty";
-    p.textContent = "No apps have been added yet.";
+    p.textContent = all.length ? "No apps to show. Beta apps can be switched on in ⚙️ Settings." : "No apps have been added yet.";
     grid.append(p);
   }
   grid.style.setProperty("--rows", Math.max(1, Math.ceil(grid.children.length / 2)));
@@ -631,12 +660,18 @@ $("openSettings").addEventListener("click", () => {
     : "This device has the <b>viewing key</b>.";
   $("editToggleRow").hidden = !isAdmin();
   $("editToggle").checked = editOn;
+  $("betaToggle").checked = showBeta;
   $("newKey").value = "";
   $("keyMsg").textContent = "";
   $("settings").showModal();
 });
 
 $("editToggle").addEventListener("change", e => setEdit(e.target.checked));
+$("betaToggle").addEventListener("change", e => {
+  showBeta = e.target.checked;
+  store.set(K_BETA, showBeta);
+  render();
+});
 $("editingBadge").addEventListener("click", () => setEdit(false));
 
 $("keyForm").addEventListener("submit", async e => {
@@ -663,6 +698,7 @@ function openEditor(t) {
   $("fUrl").value = t ? t.url : "";
   $("fDesc").value = t ? t.description || "" : "";
   $("fIcon").value = t ? t.icon || "" : "";
+  $("fBeta").checked = !!(t && t.beta);
   $("delTool").hidden = !t;
   $("editMsg").textContent = "";
   const cached = t && t.imgAt ? store.get(K_IMG + t.id, null) : null;
@@ -733,7 +769,8 @@ $("toolForm").addEventListener("submit", async e => {
     name,
     url: $("fUrl").value.trim(),
     description: $("fDesc").value.trim(),
-    icon: $("fIcon").value.trim()
+    icon: $("fIcon").value.trim(),
+    beta: $("fBeta").checked
   };
   if (pendingImage !== undefined) body.image = pendingImage;
   const id = editing ? editing.id : newId(name);

@@ -201,6 +201,9 @@ export default {
         id, name, url,
         description: text(body.description, 200),
         icon: text(body.icon, 8),
+        // Beta tools are sent to everyone with a key; the page decides
+        // whether to show them. It's a "not tested yet" label, not a lock.
+        beta: body.beta === true,
         imgAt: prev.imgAt || 0
       };
 
